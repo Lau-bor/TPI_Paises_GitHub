@@ -103,3 +103,59 @@ def guardar_paises(paises, ruta):
             escritor.writerows(paises)
     except OSError as error:
         print(f"[ERROR] No se pudo guardar el archivo CSV: {error}")
+
+def buscar_indice_exacto(paises, nombre):
+    """
+    Devuelve el índice del país cuyo nombre coincide exactamente
+    sin distinguir mayúsculas/minúsculas. Si no existe, devuelve None.
+    """
+    for indice, pais in enumerate(paises):
+        if pais["nombre"].lower() == nombre.lower():
+            return indice
+    return None
+
+
+def pedir_entero_positivo(mensaje):
+    """Solicita un número entero positivo y repite hasta que el dato sea válido."""
+    while True:
+        entrada = input(mensaje).strip()
+
+        try:
+            valor = int(entrada)
+
+            if valor <= 0:
+                print("  [ERROR] El valor debe ser mayor que cero.")
+            else:
+                return valor
+
+        except ValueError:
+            print("  [ERROR] Ingrese un número entero válido.")
+
+
+def mostrar_tabla(paises):
+    """Imprime la lista de países en formato de tabla."""
+    if len(paises) == 0:
+        print("[INFO] No hay datos para mostrar.")
+        return
+
+    ancho_nombre = 8
+    for pais in paises:
+        if len(pais["nombre"]) > ancho_nombre:
+            ancho_nombre = len(pais["nombre"])
+
+    encabezado = (
+        f"  {'Nombre':<{ancho_nombre}}  {'Población':>15}  "
+        f"{'Superficie':>14}  Continente"
+    )
+    separador = "  " + "-" * (ancho_nombre + 50)
+
+    print(encabezado)
+    print(separador)
+
+    for pais in paises:
+        print(
+            f"  {pais['nombre']:<{ancho_nombre}}  "
+            f"{pais['poblacion']:>15,}  "
+            f"{pais['superficie']:>12,} km²  "
+            f"{pais['continente']}"
+        )
