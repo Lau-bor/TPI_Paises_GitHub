@@ -159,3 +159,46 @@ def mostrar_tabla(paises):
             f"{pais['superficie']:>12,} km²  "
             f"{pais['continente']}"
         )
+
+def listar_paises(paises):
+    """Muestra todos los países cargados en formato tabla."""
+    if len(paises) == 0:
+        print("[INFO] No hay países registrados.")
+        return
+
+    print(f"\n  Total: {len(paises)} países")
+    mostrar_tabla(paises)
+
+
+def mostrar_menu():
+    """Imprime el menú de opciones."""
+    print("\n" + "═" * 50)
+    print("   SISTEMA DE GESTIÓN DE PAÍSES")
+    print("═" * 50)
+    print("  7. Listar todos los países")
+    print("  0. Salir")
+    print("─" * 50)
+
+
+def main():
+    """Función principal: carga datos e inicia el bucle del menú."""
+    print("Cargando datos desde el archivo CSV...")
+    paises = cargar_paises(ARCHIVO_CSV)
+    print(f"[OK] {len(paises)} países cargados.")
+
+    while True:
+        mostrar_menu()
+        opcion = input("  Seleccione una opción: ").strip()
+
+        if opcion == "7":
+            listar_paises(paises)
+            input("\n  Presione Enter para continuar...")
+        elif opcion == "0":
+            print("\n[OK] ¡Hasta luego!\n")
+            break
+        else:
+            print("[ERROR] Opción no válida. Intente de nuevo.")
+
+
+if __name__ == "__main__":
+    main()
