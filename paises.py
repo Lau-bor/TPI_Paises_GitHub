@@ -178,6 +178,7 @@ def mostrar_menu():
     print("  1. Agregar país")
     print("  2. Actualizar datos de un país")
     print("  3. Buscar país por nombre")
+    print("  4. Filtrar países")
     print("  7. Listar todos los países")
     print("  0. Salir")
     print("─" * 50)
@@ -201,6 +202,9 @@ def main():
             input("\n  Presione Enter para continuar...")
         elif opcion == "3":
             buscar_pais(paises)
+            input("\n  Presione Enter para continuar...")
+        elif opcion == "4":
+            filtrar_paises(paises)
             input("\n  Presione Enter para continuar...")
         if opcion == "7":
             listar_paises(paises)
@@ -301,6 +305,90 @@ def buscar_pais(paises):
     else:
         print(f"\n  Se encontraron {len(resultados)} resultado(s):")
         mostrar_tabla(resultados)
+
+def normalizar_para_ordenar(texto):
+    """Convierte texto con acentos a una forma simple para ordenar alfabéticamente."""
+    texto = texto.lower()
+    texto = texto.replace("á", "a")
+    texto = texto.replace("é", "e")
+    texto = texto.replace("í", "i")
+    texto = texto.replace("ó", "o")
+    texto = texto.replace("ú", "u")
+    texto = texto.replace("ñ", "n")
+    return texto
+
+def filtrar_paises(paises):
+    """Submenú de filtros: continente, rango de población o superficie."""
+    if len(paises) == 0:
+        print("[INFO] No hay países cargados para filtrar.")
+        return
+
+    print("\n── Filtrar países ──")
+    print("  1. Por continente")
+    print("  2. Por rango de población")
+    print("  3. Por rango de superficie")
+    opcion = input("  Opción: ").strip()
+
+    if opcion == "1":
+        filtrar_por_continente(paises)
+    elif opcion == "2":
+        filtrar_por_rango(paises, "poblacion", "población", "habitantes")
+    elif opcion == "3":
+        filtrar_por_rango(paises, "superficie", "superficie", "km²")
+    else:
+        print("[ERROR] Opción no válida.")
+
+
+def filtrar_por_continente(paises):
+    """Muestra países del continente indicado."""
+    continentes = []
+
+    for pais in paises:
+        if pais["continente"] not in continentes:
+            continentes.append(pais["continente"])
+
+    continentes.sort(key=normalizar_para_ordenar)
+
+    print(f"\n  Continentes disponibles: {', '.join(continentes)}")
+    continente = input("  Continente: ").strip()
+
+    if continente == "":
+        print("[ERROR] Debe ingresar un continente.")
+        return
+
+    resultados = []
+    for pais in paises:
+        if pais["continente"].lower() == continente.lower():
+            resultados.append(pais)
+
+    if len(resultados) == 0:
+        print(f"[INFO] No se encontraron países en '{continente}'.")
+    else:
+        print(f"\n  Países en {continente} ({len(resultados)}):")
+        mostrar_tabla(resultados)
+
+
+def filtrar_por_rango(paises, campo, etiqueta, unidad):
+    """Filtra países dentro de un rango numérico de un campo dado."""
+    minimo = pedir_entero_positivo(f"  {etiqueta.capitalize()} mínima ({unidad}): ")
+    maximo = pedir_entero_positivo(f"  {etiqueta.capitalize()} máxima ({unidad}): ")
+
+    if minimo > maximo:
+        print("[ERROR] El mínimo no puede ser mayor que el máximo.")
+        return
+
+    resultados = []
+    for pais in paises:
+        if minimo <= pais[campo] <= maximo:
+            resultados.append(pais)
+
+    if len(resultados) == 0:
+        print(f"[INFO] No hay países con {etiqueta} entre {minimo:,} y {maximo:,} {unidad}.")
+    else:
+        print(f"\n  Países con {etiqueta} entre {minimo:,} y {maximo:,} {unidad} ({len(resultados)}):")
+        mostrar_tabla(resultados)
+
+
 
 if __name__ == "__main__":
     main()
