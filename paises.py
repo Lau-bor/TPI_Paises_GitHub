@@ -179,6 +179,7 @@ def mostrar_menu():
     print("  2. Actualizar datos de un país")
     print("  3. Buscar país por nombre")
     print("  4. Filtrar países")
+    print("  5. Ordenar países")
     print("  7. Listar todos los países")
     print("  0. Salir")
     print("─" * 50)
@@ -205,6 +206,9 @@ def main():
             input("\n  Presione Enter para continuar...")
         elif opcion == "4":
             filtrar_paises(paises)
+            input("\n  Presione Enter para continuar...")
+        elif opcion == "5":
+            ordenar_paises(paises)
             input("\n  Presione Enter para continuar...")
         if opcion == "7":
             listar_paises(paises)
@@ -387,6 +391,66 @@ def filtrar_por_rango(paises, campo, etiqueta, unidad):
     else:
         print(f"\n  Países con {etiqueta} entre {minimo:,} y {maximo:,} {unidad} ({len(resultados)}):")
         mostrar_tabla(resultados)
+
+def obtener_nombre(pais):
+    """Devuelve el nombre de un país. Se usa para ordenar."""
+    return normalizar_para_ordenar(pais["nombre"])
+
+
+def obtener_poblacion(pais):
+    """Devuelve la población de un país. Se usa para ordenar y calcular estadísticas."""
+    return pais["poblacion"]
+
+
+def obtener_superficie(pais):
+    """Devuelve la superficie de un país. Se usa para ordenar."""
+    return pais["superficie"]
+
+
+def ordenar_paises(paises):
+    """Submenú para ordenar la lista de países por distintos criterios."""
+    if len(paises) == 0:
+        print("[INFO] No hay países cargados para ordenar.")
+        return
+
+    print("\n── Ordenar países ──")
+    print("  Criterio:")
+    print("  1. Nombre")
+    print("  2. Población")
+    print("  3. Superficie")
+    criterio = input("  Opción: ").strip()
+
+    if criterio == "1":
+        campo = "nombre"
+        funcion_ordenamiento = obtener_nombre
+    elif criterio == "2":
+        campo = "poblacion"
+        funcion_ordenamiento = obtener_poblacion
+    elif criterio == "3":
+        campo = "superficie"
+        funcion_ordenamiento = obtener_superficie
+    else:
+        print("[ERROR] Opción no válida.")
+        return
+
+    print("  Orden:")
+    print("  1. Ascendente")
+    print("  2. Descendente")
+    orden = input("  Opción: ").strip()
+
+    if orden == "1":
+        descendente = False
+        direccion = "ascendente"
+    elif orden == "2":
+        descendente = True
+        direccion = "descendente"
+    else:
+        print("[ERROR] Opción no válida.")
+        return
+
+    ordenados = sorted(paises, key=funcion_ordenamiento, reverse=descendente)
+    print(f"\n  Lista ordenada por '{campo}' ({direccion}):")
+    mostrar_tabla(ordenados)
 
 
 
