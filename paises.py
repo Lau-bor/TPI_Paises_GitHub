@@ -175,6 +175,8 @@ def mostrar_menu():
     print("\n" + "═" * 50)
     print("   SISTEMA DE GESTIÓN DE PAÍSES")
     print("═" * 50)
+    print("  1. Agregar país")
+    print("  2. Actualizar datos de un país")
     print("  7. Listar todos los países")
     print("  0. Salir")
     print("─" * 50)
@@ -190,6 +192,12 @@ def main():
         mostrar_menu()
         opcion = input("  Seleccione una opción: ").strip()
 
+        if opcion == "1":
+            agregar_pais(paises)
+            input("\n  Presione Enter para continuar...")
+        elif opcion == "2":
+            actualizar_pais(paises)
+            input("\n  Presione Enter para continuar...")
         if opcion == "7":
             listar_paises(paises)
             input("\n  Presione Enter para continuar...")
@@ -198,6 +206,73 @@ def main():
             break
         else:
             print("[ERROR] Opción no válida. Intente de nuevo.")
+
+def agregar_pais(paises):
+    """
+    Solicita los datos de un nuevo país al usuario,
+    valida que no exista y lo agrega a la lista.
+    """
+    print("\n── Agregar nuevo país ──")
+
+    nombre = input("  Nombre: ").strip()
+    if nombre == "":
+        print("[ERROR] El nombre no puede estar vacío.")
+        return
+
+    if buscar_indice_exacto(paises, nombre) is not None:
+        print(f"[ERROR] El país '{nombre}' ya existe en el sistema.")
+        return
+
+    poblacion = pedir_entero_positivo("  Población: ")
+    superficie = pedir_entero_positivo("  Superficie (km²): ")
+
+    continente = input("  Continente: ").strip()
+    if continente == "":
+        print("[ERROR] El continente no puede estar vacío.")
+        return
+
+    pais = {
+        "nombre": nombre,
+        "poblacion": poblacion,
+        "superficie": superficie,
+        "continente": continente,
+    }
+
+    paises.append(pais)
+    guardar_paises(paises, ARCHIVO_CSV)
+    print(f"[OK] País '{nombre}' agregado correctamente.")
+
+
+def actualizar_pais(paises):
+    """Permite actualizar la población y superficie de un país existente."""
+    if len(paises) == 0:
+        print("[INFO] No hay países cargados para actualizar.")
+        return
+
+    print("\n── Actualizar país ──")
+    nombre = input("  Nombre del país a actualizar: ").strip()
+
+    if nombre == "":
+        print("[ERROR] Debe ingresar un nombre.")
+        return
+
+    indice = buscar_indice_exacto(paises, nombre)
+
+    if indice is None:
+        print(f"[ERROR] No se encontró el país '{nombre}'.")
+        return
+
+    print(f"  Datos actuales → Población: {paises[indice]['poblacion']:,} | "
+          f"Superficie: {paises[indice]['superficie']:,} km²")
+
+    nueva_poblacion = pedir_entero_positivo("  Nueva población: ")
+    nueva_superficie = pedir_entero_positivo("  Nueva superficie (km²): ")
+
+    paises[indice]["poblacion"] = nueva_poblacion
+    paises[indice]["superficie"] = nueva_superficie
+
+    guardar_paises(paises, ARCHIVO_CSV)
+    print(f"[OK] Datos de '{paises[indice]['nombre']}' actualizados.")
 
 
 if __name__ == "__main__":
