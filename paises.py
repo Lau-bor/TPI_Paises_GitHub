@@ -177,6 +177,7 @@ def mostrar_menu():
     print("═" * 50)
     print("  1. Agregar país")
     print("  2. Actualizar datos de un país")
+    print("  3. Buscar país por nombre")
     print("  7. Listar todos los países")
     print("  0. Salir")
     print("─" * 50)
@@ -197,6 +198,9 @@ def main():
             input("\n  Presione Enter para continuar...")
         elif opcion == "2":
             actualizar_pais(paises)
+            input("\n  Presione Enter para continuar...")
+        elif opcion == "3":
+            buscar_pais(paises)
             input("\n  Presione Enter para continuar...")
         if opcion == "7":
             listar_paises(paises)
@@ -274,6 +278,29 @@ def actualizar_pais(paises):
     guardar_paises(paises, ARCHIVO_CSV)
     print(f"[OK] Datos de '{paises[indice]['nombre']}' actualizados.")
 
+def buscar_pais(paises):
+    """Busca países por coincidencia parcial o exacta en el nombre."""
+    if len(paises) == 0:
+        print("[INFO] No hay países cargados para buscar.")
+        return
+
+    print("\n── Buscar país ──")
+    termino = input("  Ingrese nombre (parcial o exacto): ").strip().lower()
+
+    if termino == "":
+        print("[ERROR] Debe ingresar un término de búsqueda.")
+        return
+
+    resultados = []
+    for pais in paises:
+        if termino in pais["nombre"].lower():
+            resultados.append(pais)
+
+    if len(resultados) == 0:
+        print(f"[INFO] No se encontraron países con '{termino}'.")
+    else:
+        print(f"\n  Se encontraron {len(resultados)} resultado(s):")
+        mostrar_tabla(resultados)
 
 if __name__ == "__main__":
     main()
