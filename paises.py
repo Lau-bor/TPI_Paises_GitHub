@@ -15,10 +15,16 @@ import os
 # ──────────────────────────────────────────────
 #  CONSTANTES
 # ──────────────────────────────────────────────
-
+# Se arma la ruta del CSV tomando como base la carpeta donde está este archivo.
+# Esto evita errores si el programa se ejecuta desde otra ubicación.
 CARPETA_PROYECTO = os.path.dirname(os.path.abspath(__file__))
 ARCHIVO_CSV = os.path.join(CARPETA_PROYECTO, "paises.csv")
 CAMPOS = ["nombre", "poblacion", "superficie", "continente"]
+
+
+# ══════════════════════════════════════════════
+#  MÓDULO: LECTURA / ESCRITURA CSV
+# ══════════════════════════════════════════════
 
 def cargar_paises(ruta):
     """
@@ -35,6 +41,7 @@ def cargar_paises(ruta):
         with open(ruta, newline="", encoding="utf-8") as archivo:
             lector = csv.DictReader(archivo)
 
+            # Validar que el CSV tenga encabezados y que estén los campos requeridos.
             if lector.fieldnames is None:
                 print("[ERROR CSV] El archivo CSV está vacío o no tiene encabezados.")
                 return paises
@@ -48,6 +55,7 @@ def cargar_paises(ruta):
 
             for numero_fila, fila in enumerate(lector, start=2):
                 try:
+                    # Validar que todos los campos existan y no estén vacíos.
                     for campo in CAMPOS:
                         valor = fila.get(campo)
                         if valor is None or valor.strip() == "":
@@ -81,7 +89,6 @@ def cargar_paises(ruta):
                         "superficie": superficie,
                         "continente": continente,
                     }
-
                     paises.append(pais)
                     nombres_cargados.append(nombre.lower())
 
@@ -104,124 +111,10 @@ def guardar_paises(paises, ruta):
     except OSError as error:
         print(f"[ERROR] No se pudo guardar el archivo CSV: {error}")
 
-def buscar_indice_exacto(paises, nombre):
-    """
-    Devuelve el índice del país cuyo nombre coincide exactamente
-    sin distinguir mayúsculas/minúsculas. Si no existe, devuelve None.
-    """
-    for indice, pais in enumerate(paises):
-        if pais["nombre"].lower() == nombre.lower():
-            return indice
-    return None
 
-
-def pedir_entero_positivo(mensaje):
-    """Solicita un número entero positivo y repite hasta que el dato sea válido."""
-    while True:
-        entrada = input(mensaje).strip()
-
-        try:
-            valor = int(entrada)
-
-            if valor <= 0:
-                print("  [ERROR] El valor debe ser mayor que cero.")
-            else:
-                return valor
-
-        except ValueError:
-            print("  [ERROR] Ingrese un número entero válido.")
-
-
-def mostrar_tabla(paises):
-    """Imprime la lista de países en formato de tabla."""
-    if len(paises) == 0:
-        print("[INFO] No hay datos para mostrar.")
-        return
-
-    ancho_nombre = 8
-    for pais in paises:
-        if len(pais["nombre"]) > ancho_nombre:
-            ancho_nombre = len(pais["nombre"])
-
-    encabezado = (
-        f"  {'Nombre':<{ancho_nombre}}  {'Población':>15}  "
-        f"{'Superficie':>14}  Continente"
-    )
-    separador = "  " + "-" * (ancho_nombre + 50)
-
-    print(encabezado)
-    print(separador)
-
-    for pais in paises:
-        print(
-            f"  {pais['nombre']:<{ancho_nombre}}  "
-            f"{pais['poblacion']:>15,}  "
-            f"{pais['superficie']:>12,} km²  "
-            f"{pais['continente']}"
-        )
-
-def listar_paises(paises):
-    """Muestra todos los países cargados en formato tabla."""
-    if len(paises) == 0:
-        print("[INFO] No hay países registrados.")
-        return
-
-    print(f"\n  Total: {len(paises)} países")
-    mostrar_tabla(paises)
-
-
-def mostrar_menu():
-    """Imprime el menú de opciones."""
-    print("\n" + "═" * 50)
-    print("   SISTEMA DE GESTIÓN DE PAÍSES")
-    print("═" * 50)
-    print("  1. Agregar país")
-    print("  2. Actualizar datos de un país")
-    print("  3. Buscar país por nombre")
-    print("  4. Filtrar países")
-    print("  5. Ordenar países")
-    print("  6. Mostrar estadísticas")
-    print("  7. Listar todos los países")
-    print("  0. Salir")
-    print("─" * 50)
-
-
-def main():
-    """Función principal: carga datos e inicia el bucle del menú."""
-    print("Cargando datos desde el archivo CSV...")
-    paises = cargar_paises(ARCHIVO_CSV)
-    print(f"[OK] {len(paises)} países cargados.")
-
-    while True:
-        mostrar_menu()
-        opcion = input("  Seleccione una opción: ").strip()
-
-        if opcion == "1":
-            agregar_pais(paises)
-            input("\n  Presione Enter para continuar...")
-        elif opcion == "2":
-            actualizar_pais(paises)
-            input("\n  Presione Enter para continuar...")
-        elif opcion == "3":
-            buscar_pais(paises)
-            input("\n  Presione Enter para continuar...")
-        elif opcion == "4":
-            filtrar_paises(paises)
-            input("\n  Presione Enter para continuar...")
-        elif opcion == "5":
-            ordenar_paises(paises)
-            input("\n  Presione Enter para continuar...")
-        elif opcion == "6":
-            mostrar_estadisticas(paises)
-            input("\n  Presione Enter para continuar...")
-        if opcion == "7":
-            listar_paises(paises)
-            input("\n  Presione Enter para continuar...")
-        elif opcion == "0":
-            print("\n[OK] ¡Hasta luego!\n")
-            break
-        else:
-            print("[ERROR] Opción no válida. Intente de nuevo.")
+# ══════════════════════════════════════════════
+#  MÓDULO: AGREGAR / ACTUALIZAR
+# ══════════════════════════════════════════════
 
 def agregar_pais(paises):
     """
@@ -235,6 +128,7 @@ def agregar_pais(paises):
         print("[ERROR] El nombre no puede estar vacío.")
         return
 
+    # Verificar duplicado sin distinguir mayúsculas/minúsculas.
     if buscar_indice_exacto(paises, nombre) is not None:
         print(f"[ERROR] El país '{nombre}' ya existe en el sistema.")
         return
@@ -290,6 +184,11 @@ def actualizar_pais(paises):
     guardar_paises(paises, ARCHIVO_CSV)
     print(f"[OK] Datos de '{paises[indice]['nombre']}' actualizados.")
 
+
+# ══════════════════════════════════════════════
+#  MÓDULO: BÚSQUEDA
+# ══════════════════════════════════════════════
+
 def buscar_pais(paises):
     """Busca países por coincidencia parcial o exacta en el nombre."""
     if len(paises) == 0:
@@ -314,16 +213,10 @@ def buscar_pais(paises):
         print(f"\n  Se encontraron {len(resultados)} resultado(s):")
         mostrar_tabla(resultados)
 
-def normalizar_para_ordenar(texto):
-    """Convierte texto con acentos a una forma simple para ordenar alfabéticamente."""
-    texto = texto.lower()
-    texto = texto.replace("á", "a")
-    texto = texto.replace("é", "e")
-    texto = texto.replace("í", "i")
-    texto = texto.replace("ó", "o")
-    texto = texto.replace("ú", "u")
-    texto = texto.replace("ñ", "n")
-    return texto
+
+# ══════════════════════════════════════════════
+#  MÓDULO: FILTROS
+# ══════════════════════════════════════════════
 
 def filtrar_paises(paises):
     """Submenú de filtros: continente, rango de población o superficie."""
@@ -396,20 +289,10 @@ def filtrar_por_rango(paises, campo, etiqueta, unidad):
         print(f"\n  Países con {etiqueta} entre {minimo:,} y {maximo:,} {unidad} ({len(resultados)}):")
         mostrar_tabla(resultados)
 
-def obtener_nombre(pais):
-    """Devuelve el nombre de un país. Se usa para ordenar."""
-    return normalizar_para_ordenar(pais["nombre"])
 
-
-def obtener_poblacion(pais):
-    """Devuelve la población de un país. Se usa para ordenar y calcular estadísticas."""
-    return pais["poblacion"]
-
-
-def obtener_superficie(pais):
-    """Devuelve la superficie de un país. Se usa para ordenar."""
-    return pais["superficie"]
-
+# ══════════════════════════════════════════════
+#  MÓDULO: ORDENAMIENTO
+# ══════════════════════════════════════════════
 
 def ordenar_paises(paises):
     """Submenú para ordenar la lista de países por distintos criterios."""
@@ -456,6 +339,11 @@ def ordenar_paises(paises):
     print(f"\n  Lista ordenada por '{campo}' ({direccion}):")
     mostrar_tabla(ordenados)
 
+
+# ══════════════════════════════════════════════
+#  MÓDULO: ESTADÍSTICAS
+# ══════════════════════════════════════════════
+
 def mostrar_estadisticas(paises):
     """Calcula y muestra estadísticas globales del dataset."""
     if len(paises) == 0:
@@ -497,5 +385,168 @@ def mostrar_estadisticas(paises):
         cantidad = conteo_continentes[continente]
         print(f"    • {continente:<20} {cantidad} país/es")
 
+
+# ══════════════════════════════════════════════
+#  MÓDULO: LISTAR TODOS
+# ══════════════════════════════════════════════
+
+def listar_paises(paises):
+    """Muestra todos los países cargados en formato tabla."""
+    if len(paises) == 0:
+        print("[INFO] No hay países registrados.")
+        return
+
+    print(f"\n  Total: {len(paises)} países")
+    mostrar_tabla(paises)
+
+
+# ══════════════════════════════════════════════
+#  UTILIDADES INTERNAS
+# ══════════════════════════════════════════════
+
+def buscar_indice_exacto(paises, nombre):
+    """
+    Devuelve el índice del país cuyo nombre coincide exactamente
+    sin distinguir mayúsculas/minúsculas. Si no existe, devuelve None.
+    """
+    for indice, pais in enumerate(paises):
+        if pais["nombre"].lower() == nombre.lower():
+            return indice
+    return None
+
+
+
+
+def normalizar_para_ordenar(texto):
+    """Convierte texto con acentos a una forma simple para ordenar alfabéticamente."""
+    texto = texto.lower()
+    texto = texto.replace("á", "a")
+    texto = texto.replace("é", "e")
+    texto = texto.replace("í", "i")
+    texto = texto.replace("ó", "o")
+    texto = texto.replace("ú", "u")
+    texto = texto.replace("ñ", "n")
+    return texto
+
+
+def obtener_nombre(pais):
+    """Devuelve el nombre de un país. Se usa para ordenar."""
+    return normalizar_para_ordenar(pais["nombre"])
+
+
+def obtener_poblacion(pais):
+    """Devuelve la población de un país. Se usa para ordenar y calcular estadísticas."""
+    return pais["poblacion"]
+
+
+def obtener_superficie(pais):
+    """Devuelve la superficie de un país. Se usa para ordenar."""
+    return pais["superficie"]
+
+def pedir_entero_positivo(mensaje):
+    """Solicita un número entero positivo y repite hasta que el dato sea válido."""
+    while True:
+        entrada = input(mensaje).strip()
+
+        try:
+            valor = int(entrada)
+
+            if valor <= 0:
+                print("  [ERROR] El valor debe ser mayor que cero.")
+            else:
+                return valor
+
+        except ValueError:
+            print("  [ERROR] Ingrese un número entero válido.")
+
+
+def mostrar_tabla(paises):
+    """Imprime la lista de países en formato de tabla."""
+    if len(paises) == 0:
+        print("[INFO] No hay datos para mostrar.")
+        return
+
+    ancho_nombre = 8
+    for pais in paises:
+        if len(pais["nombre"]) > ancho_nombre:
+            ancho_nombre = len(pais["nombre"])
+
+    encabezado = (
+        f"  {'Nombre':<{ancho_nombre}}  {'Población':>15}  "
+        f"{'Superficie':>14}  Continente"
+    )
+    separador = "  " + "-" * (ancho_nombre + 50)
+
+    print(encabezado)
+    print(separador)
+
+    for pais in paises:
+        print(
+            f"  {pais['nombre']:<{ancho_nombre}}  "
+            f"{pais['poblacion']:>15,}  "
+            f"{pais['superficie']:>12,} km²  "
+            f"{pais['continente']}"
+        )
+
+
+# ══════════════════════════════════════════════
+#  MENÚ PRINCIPAL
+# ══════════════════════════════════════════════
+
+def mostrar_menu():
+    """Imprime el menú de opciones."""
+    print("\n" + "═" * 50)
+    print("   SISTEMA DE GESTIÓN DE PAÍSES")
+    print("═" * 50)
+    print("  1. Agregar país")
+    print("  2. Actualizar datos de un país")
+    print("  3. Buscar país por nombre")
+    print("  4. Filtrar países")
+    print("  5. Ordenar países")
+    print("  6. Mostrar estadísticas")
+    print("  7. Listar todos los países")
+    print("  0. Salir")
+    print("─" * 50)
+
+
+def main():
+    """Función principal: carga datos e inicia el bucle del menú."""
+    print("Cargando datos desde el archivo CSV...")
+    paises = cargar_paises(ARCHIVO_CSV)
+    print(f"[OK] {len(paises)} países cargados.")
+
+    while True:
+        mostrar_menu()
+        opcion = input("  Seleccione una opción: ").strip()
+
+        if opcion == "1":
+            agregar_pais(paises)
+            input("\n  Presione Enter para continuar...")
+        elif opcion == "2":
+            actualizar_pais(paises)
+            input("\n  Presione Enter para continuar...")
+        elif opcion == "3":
+            buscar_pais(paises)
+            input("\n  Presione Enter para continuar...")
+        elif opcion == "4":
+            filtrar_paises(paises)
+            input("\n  Presione Enter para continuar...")
+        elif opcion == "5":
+            ordenar_paises(paises)
+            input("\n  Presione Enter para continuar...")
+        elif opcion == "6":
+            mostrar_estadisticas(paises)
+            input("\n  Presione Enter para continuar...")
+        elif opcion == "7":
+            listar_paises(paises)
+            input("\n  Presione Enter para continuar...")
+        elif opcion == "0":
+            print("\n[OK] ¡Hasta luego!\n")
+            break
+        else:
+            print("[ERROR] Opción no válida. Intente de nuevo.")
+
+
+# ──────────────────────────────────────────────
 if __name__ == "__main__":
     main()
